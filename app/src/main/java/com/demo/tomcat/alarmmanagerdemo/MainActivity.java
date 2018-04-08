@@ -13,6 +13,9 @@ import android.widget.Toast;
 
 import java.util.Calendar;
 
+// https://www.sitepoint.com/scheduling-background-tasks-android/
+
+
 public class MainActivity extends AppCompatActivity
 {
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -54,11 +57,7 @@ public class MainActivity extends AppCompatActivity
         Log.w(TAG, "onStop(), ");
         super.onStop();
 
-        if (alarmReceiver != null)
-        {
-            unregisterReceiver(alarmReceiver);
-            Log.e(TAG, " unregisterReceiver alarmReceiver !! ");
-        }
+
     }
 
     @Override
@@ -66,6 +65,11 @@ public class MainActivity extends AppCompatActivity
     {
         Log.w(TAG, "onDestroy(), ");
         super.onDestroy();
+        if (alarmReceiver != null)
+        {
+            unregisterReceiver(alarmReceiver);
+            Log.e(TAG, " unregisterReceiver alarmReceiver !! ");
+        }
     }
 
 
@@ -77,15 +81,18 @@ public class MainActivity extends AppCompatActivity
 
     private void initControl()
     {
-        setAlarm(30);
+        setAlarm(10);
     }
 
     private void setAlarm(int n)
     {
+        long actionTime = 70;
+
         for (int i=0; i<n; i++)
         {
             cal = Calendar.getInstance();
-            cal.set(2018, 4-1, 6, 1, 20, 0);
+            //cal.set(2018, 4-1, 6, 1, 20, 0);
+            cal.setTimeInMillis(System.currentTimeMillis() + actionTime);
 
             Intent intent = new Intent(ACTION_ALARM_SET);
             am = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
@@ -119,6 +126,7 @@ public class MainActivity extends AppCompatActivity
         return filter;
     }
 
+    int timerCounts=0;
 
     //------------------ inner class -------------------//
     private class AlarmReceiver extends BroadcastReceiver
@@ -126,12 +134,13 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onReceive(Context context, Intent intent)
         {
-            Log.w(TAG, "onReceive(), ");
+            Log.w(TAG, "onReceive(), timerCounts: " + timerCounts);
             String action = intent.getAction();
             String message = "";
 
             if (action.equalsIgnoreCase(ACTION_ALARM_SET))
             {
+                timerCounts++;
                 //Toast.makeText(context, "Times Up!!", Toast.LENGTH_LONG).show();
                 message = "Times Up!!";
             }
