@@ -43,8 +43,6 @@ public class MainActivity extends AppCompatActivity
     private static boolean swStatus = false;
 
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -101,7 +99,7 @@ public class MainActivity extends AppCompatActivity
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void OnClickedOnOff(View view)
     {
-        Log.w(TAG, "OnClickedOnOff(), ");
+        Log.w(TAG, "OnClickedOnOff(), swStatus: " + swStatus);
 
         if (!swStatus)
         {
@@ -113,7 +111,11 @@ public class MainActivity extends AppCompatActivity
         {
             btnSwitch.setText("Start Alarm");
             swStatus = false;
+            //Intent intent = new Intent(ACTION_ALARM_CANCLE);
+            //sendBroadcast(new Intent(ACTION_ALARM_CANCLE));
             cancelAlarm(1);
+            alarmReceiver.abortBroadcast();
+            alarmReceiver.clearAbortBroadcast();
         }
     }
 
@@ -131,7 +133,7 @@ public class MainActivity extends AppCompatActivity
     private void initControl()
     {
         //setAlarm(10);
-        initAlarm();
+        //initAlarm();
     }
 
     Calendar calendar;
@@ -148,16 +150,21 @@ public class MainActivity extends AppCompatActivity
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
-    public void startAlarm() {
-
+    public void startAlarm()
+    {
+        String msg = "";
         if (am == null)
         {
             int interval = 1000 * 10;
+            Intent  alarmIntent = new Intent(ACTION_ALARM_SET);
+            //pi = PendingIntent.getBroadcast(this, 0, alarmIntent, PendingIntent.FLAG_ONE_SHOT);
+            pi = PendingIntent.getBroadcast(MainActivity.this, 0,
+                                                alarmIntent, PendingIntent.FLAG_ONE_SHOT);
             am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
             if (Build.VERSION.SDK_INT < 23) {
-                //am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + interval, pi);
-                am.setRepeating(AlarmManager.RTC_WAKEUP,
-                        calendar.getTimeInMillis() + interval, interval, pi);
+                am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + interval, pi);
+                //am.setRepeating(AlarmManager.RTC_WAKEUP,
+                //        calendar.getTimeInMillis() + interval, interval, pi);
             }
             else
             {
@@ -166,13 +173,16 @@ public class MainActivity extends AppCompatActivity
                 //am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, interval, pi);
             }
 
-            //am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, pi);
-            Toast.makeText(this, "Alarm set", Toast.LENGTH_SHORT).show();
+            msg = "Alarm set";
+
+            //Toast.makeText(this, "Alarm set", Toast.LENGTH_SHORT).show();
         }
         else
         {
-            Toast.makeText(this, "Error!! Alarm NOT null", Toast.LENGTH_SHORT).show();
+            msg = "Error!! Alarm NOT null";
+            //Toast.makeText(this, "Error!! Alarm NOT null", Toast.LENGTH_SHORT).show();
         }
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
 
     }
 
@@ -247,31 +257,32 @@ public class MainActivity extends AppCompatActivity
             String action = intent.getAction();
             String message = "";
             Date thisDate = new Date(System.currentTimeMillis());
-            Log.w(TAG, "onReceive(), timerCounts: " + timerCounts + ", " + sdf.format(thisDate));
+            Log.w(TAG, "onReceive(), Action: " + action);
 
             if (action.equalsIgnoreCase(ACTION_ALARM_SET))
             {
+                Log.w(TAG, " timerCounts: " + timerCounts + ", " + sdf.format(thisDate));
                 timerCounts++;
                 //Toast.makeText(context, "Times Up!!", Toast.LENGTH_LONG).show();
                 message = "Times Up!! " + timerCounts + ", " + sdf.format(thisDate);
                 //Intent intent1 = new Intent(context, AlarmService.class);
                 //context.startService(intent1);
-                cancelAlarm(1);
-
-                //try {
-                    //Thread.sleep(300);
-                    initAlarm();
-                    startAlarm();
-                //}
-                //catch (InterruptedException e)
+                //if (swStatus)
                 //{
-                //    e.printStackTrace();
+                    cancelAlarm(1);
+
+                    //initAlarm();
+                    startAlarm();
                 //}
             }
             else if (action.equalsIgnoreCase(ACTION_ALARM_CANCLE))
             {
                 //Toast.makeText(context, "Cancel Alarm ~~", Toast.LENGTH_LONG).show();
                 message = "Cancel Alarm ~~";
+                cancelAlarm(1);
+                clearAbortBroadcast();
+                //alarmReceiver.clearAbortBroadcast();
+                //alarmReceiver = null;
             }
             else
             {
