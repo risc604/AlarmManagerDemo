@@ -11,7 +11,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 // https://www.sitepoint.com/scheduling-background-tasks-android/
 
@@ -127,6 +129,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     int timerCounts=0;
+    SimpleDateFormat    sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
     //------------------ inner class -------------------//
     private class AlarmReceiver extends BroadcastReceiver
@@ -134,15 +137,17 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onReceive(Context context, Intent intent)
         {
-            Log.w(TAG, "onReceive(), timerCounts: " + timerCounts);
+            //Log.w(TAG, "onReceive(), timerCounts: " + timerCounts);
             String action = intent.getAction();
             String message = "";
+            Date thisDate = new Date(System.currentTimeMillis());
+            Log.w(TAG, "onReceive(), timerCounts: " + timerCounts + ", " + sdf.format(thisDate));
 
             if (action.equalsIgnoreCase(ACTION_ALARM_SET))
             {
                 timerCounts++;
                 //Toast.makeText(context, "Times Up!!", Toast.LENGTH_LONG).show();
-                message = "Times Up!!";
+                message = "Times Up!! " + timerCounts + ", " + sdf.format(thisDate);
             }
             else if (action.equalsIgnoreCase(ACTION_ALARM_CANCLE))
             {
