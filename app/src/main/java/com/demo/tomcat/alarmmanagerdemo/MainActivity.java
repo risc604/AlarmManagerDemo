@@ -1,14 +1,22 @@
 package com.demo.tomcat.alarmmanagerdemo;
 
 import android.app.AlarmManager;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Binder;
+import android.os.Build;
+import android.os.SystemClock;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
@@ -16,6 +24,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 // https://www.sitepoint.com/scheduling-background-tasks-android/
+// http://www.cnblogs.com/happyhacking/p/5397391.html
 
 
 public class MainActivity extends AppCompatActivity
@@ -24,10 +33,16 @@ public class MainActivity extends AppCompatActivity
     public static final String ACTION_ALARM_SET = "com.demo.tomcat.alarmmanagerdemo.ACTION_ALARM_SET";
     public static final String ACTION_ALARM_CANCLE = "com.demo.tomcat.alarmmanagerdemo.ACTION_ALARM_CANCLE";
 
+    TextView    tvMessage;
+    Button      btnSwitch;
+
     AlarmReceiver   alarmReceiver;
     AlarmManager    am;
     PendingIntent   pi;
     Calendar        cal;
+    private static boolean swStatus = false;
+
+
 
 
     @Override
@@ -37,6 +52,7 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        initView();;
         initControl();
     }
 
@@ -51,6 +67,14 @@ public class MainActivity extends AppCompatActivity
             registerReceiver(alarmReceiver, getIntentFilter());
             Log.w(TAG, " registerReceiver, alarmReceiver: " + alarmReceiver);
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.w(TAG, "onActivityResult(), requestCode: " + requestCode +
+                    ", resultCode: " + resultCode);
+        super.onActivityResult(requestCode, resultCode, data);
+
     }
 
     @Override
@@ -74,48 +98,129 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    public void OnClickedOnOff(View view)
+    {
+        Log.w(TAG, "OnClickedOnOff(), ");
+
+        if (!swStatus)
+        {
+            btnSwitch.setText("Stop Alarm");
+            swStatus = true;
+            startAlarm();
+        }
+        else
+        {
+            btnSwitch.setText("Start Alarm");
+            swStatus = false;
+            cancelAlarm(1);
+        }
+    }
+
+
 
     //------------------ User function ------------------//
     private void initView()
     {
+        tvMessage = findViewById(R.id.textMessage);
+        btnSwitch = findViewById(R.id.OnOffSwitch);
+        //btnSwitch.setText("Start");
 
     }
 
     private void initControl()
     {
-        setAlarm(10);
+        //setAlarm(10);
+        initAlarm();
     }
 
-    private void setAlarm(int n)
+    Calendar calendar;
+    private void initAlarm()
     {
-        long actionTime = 70;
+        Intent  alarmIntent = new Intent(ACTION_ALARM_SET);
+        //pi = PendingIntent.getBroadcast(this, 0, alarmIntent, PendingIntent.FLAG_ONE_SHOT);
+        pi = PendingIntent.getBroadcast(MainActivity.this, 0, alarmIntent, PendingIntent.FLAG_ONE_SHOT);
 
-        for (int i=0; i<n; i++)
+        calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        //calendar.set(Calendar.HOUR_OF_DAY, 15);
+        //calendar.set(Calendar.MINUTE, 18);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    public void startAlarm() {
+
+        if (am == null)
         {
-            cal = Calendar.getInstance();
-            //cal.set(2018, 4-1, 6, 1, 20, 0);
-            cal.setTimeInMillis(System.currentTimeMillis() + actionTime);
+            int interval = 1000 * 10;
+            am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            if (Build.VERSION.SDK_INT < 23) {
+                //am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + interval, pi);
+                am.setRepeating(AlarmManager.RTC_WAKEUP,
+                        calendar.getTimeInMillis() + interval, interval, pi);
+            }
+            else
+            {
+                am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,
+                        System.currentTimeMillis() + interval, pi);
+                //am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, interval, pi);
+            }
 
-            Intent intent = new Intent(ACTION_ALARM_SET);
-            am = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-            pi = PendingIntent.getBroadcast(this, i, intent, PendingIntent.FLAG_ONE_SHOT);
-            am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
+            //am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, pi);
+            Toast.makeText(this, "Alarm set", Toast.LENGTH_SHORT).show();
+        }
+        else
+        {
+            Toast.makeText(this, "Error!! Alarm NOT null", Toast.LENGTH_SHORT).show();
         }
 
     }
 
+    public void startAlarmService()
+    {
+        AlarmService alarmService = new AlarmService();
+
+    }
+
+    public void cancleAlarm()
+    {
+
+    }
+
+    //private void setAlarm(int n)
+    //{
+    //    long actionTime = 70;
+    //
+    //    for (int i=0; i<n; i++)
+    //    {
+    //        cal = Calendar.getInstance();
+    //        //cal.set(2018, 4-1, 6, 1, 20, 0);
+    //        cal.setTimeInMillis(System.currentTimeMillis() + actionTime);
+    //
+    //        Intent intent = new Intent(ACTION_ALARM_SET);
+    //        am = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+    //        pi = PendingIntent.getBroadcast(this, i, intent, PendingIntent.FLAG_ONE_SHOT);
+    //        am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
+    //    }
+    //
+    //}
+
     private void cancelAlarm(int n)
     {
-        for (int i = 0; i < n; i++)
-        {
-            Intent intent = new Intent(ACTION_ALARM_CANCLE);
-            am = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-            pi = PendingIntent.getBroadcast(this, i, intent, PendingIntent.FLAG_ONE_SHOT);
+        //for (int i = 0; i < n; i++)
+        //{
+        //    Intent intent = new Intent(ACTION_ALARM_CANCLE);
+        //    am = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+        //    pi = PendingIntent.getBroadcast(this, i, intent, PendingIntent.FLAG_ONE_SHOT);
+
+        if (am != null) {
             am.cancel(pi);
 
             pi = null;
             am = null;
         }
+            tvMessage.setText("");
+        //}
     }
 
     private IntentFilter getIntentFilter()
@@ -134,6 +239,7 @@ public class MainActivity extends AppCompatActivity
     //------------------ inner class -------------------//
     private class AlarmReceiver extends BroadcastReceiver
     {
+        @RequiresApi(api = Build.VERSION_CODES.M)
         @Override
         public void onReceive(Context context, Intent intent)
         {
@@ -148,6 +254,19 @@ public class MainActivity extends AppCompatActivity
                 timerCounts++;
                 //Toast.makeText(context, "Times Up!!", Toast.LENGTH_LONG).show();
                 message = "Times Up!! " + timerCounts + ", " + sdf.format(thisDate);
+                //Intent intent1 = new Intent(context, AlarmService.class);
+                //context.startService(intent1);
+                cancelAlarm(1);
+
+                //try {
+                    //Thread.sleep(300);
+                    initAlarm();
+                    startAlarm();
+                //}
+                //catch (InterruptedException e)
+                //{
+                //    e.printStackTrace();
+                //}
             }
             else if (action.equalsIgnoreCase(ACTION_ALARM_CANCLE))
             {
@@ -159,6 +278,7 @@ public class MainActivity extends AppCompatActivity
                 //Toast.makeText(context, "Error !! action unknow.", Toast.LENGTH_LONG).show();
                 message = "Error !! action unknow.";
             }
+            tvMessage.setText(timerCounts + ", " + sdf.format(thisDate));
 
             Toast.makeText(context, message, Toast.LENGTH_LONG).show();
         }
