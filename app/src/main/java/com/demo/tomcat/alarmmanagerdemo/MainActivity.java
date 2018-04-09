@@ -112,10 +112,11 @@ public class MainActivity extends AppCompatActivity
             btnSwitch.setText("Start Alarm");
             swStatus = false;
             //Intent intent = new Intent(ACTION_ALARM_CANCLE);
-            //sendBroadcast(new Intent(ACTION_ALARM_CANCLE));
-            cancelAlarm(1);
-            alarmReceiver.abortBroadcast();
-            alarmReceiver.clearAbortBroadcast();
+            sendBroadcast(new Intent(ACTION_ALARM_CANCLE));
+            //sendOrderedBroadcast(new Intent(ACTION_ALARM_CANCLE), "10");
+            //cancelAlarm(1);
+            //alarmReceiver.abortBroadcast();
+            //alarmReceiver.clearAbortBroadcast();
         }
     }
 
@@ -192,10 +193,10 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    public void cancleAlarm()
-    {
-
-    }
+    //public void cancleAlarm()
+    //{
+    //
+    //}
 
     //private void setAlarm(int n)
     //{
@@ -239,6 +240,7 @@ public class MainActivity extends AppCompatActivity
 
         Log.w(TAG, "getIntentFilter(), add action to filter !! ");
         filter.addAction(ACTION_ALARM_SET);
+        filter.addAction(ACTION_ALARM_CANCLE);
 
         return filter;
     }
@@ -274,22 +276,26 @@ public class MainActivity extends AppCompatActivity
                     //initAlarm();
                     startAlarm();
                 //}
+                tvMessage.setText(timerCounts + ", " + sdf.format(thisDate));
             }
             else if (action.equalsIgnoreCase(ACTION_ALARM_CANCLE))
             {
                 //Toast.makeText(context, "Cancel Alarm ~~", Toast.LENGTH_LONG).show();
+                //abortBroadcast();
                 message = "Cancel Alarm ~~";
                 cancelAlarm(1);
+                //abortBroadcast();
                 clearAbortBroadcast();
+                timerCounts = 0;
                 //alarmReceiver.clearAbortBroadcast();
                 //alarmReceiver = null;
+                //tvMessage.setText("");
             }
             else
             {
                 //Toast.makeText(context, "Error !! action unknow.", Toast.LENGTH_LONG).show();
                 message = "Error !! action unknow.";
             }
-            tvMessage.setText(timerCounts + ", " + sdf.format(thisDate));
 
             Toast.makeText(context, message, Toast.LENGTH_LONG).show();
         }
