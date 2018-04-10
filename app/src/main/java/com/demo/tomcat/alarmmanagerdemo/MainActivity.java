@@ -1,5 +1,6 @@
 package com.demo.tomcat.alarmmanagerdemo;
 
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -31,16 +32,56 @@ public class MainActivity extends AppCompatActivity
 {
     private static final String TAG = MainActivity.class.getSimpleName();
     public static final String ACTION_ALARM_SET = "com.demo.tomcat.alarmmanagerdemo.ACTION_ALARM_SET";
-    public static final String ACTION_ALARM_CANCLE = "com.demo.tomcat.alarmmanagerdemo.ACTION_ALARM_CANCLE";
+    public static final String ACTION_ALARM_CANCEL = "com.demo.tomcat.alarmmanagerdemo.ACTION_ALARM_CANCEL";
 
     TextView    tvMessage;
     Button      btnSwitch;
 
-    AlarmReceiver   alarmReceiver;
+    private static boolean swStatus = false;
     AlarmManager    am;
     PendingIntent   pi;
-    Calendar        cal;
-    private static boolean swStatus = false;
+    AlarmReceiver   alarmReceiver;
+
+    //------------------ inner class -------------------//
+    private class AlarmReceiver extends BroadcastReceiver
+    {
+        @SuppressLint("SetTextI18n")
+        @RequiresApi(api = Build.VERSION_CODES.M)
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            String action = intent.getAction();
+            String message = "";
+            Date thisDate = new Date(System.currentTimeMillis());
+            Log.w(TAG, "onReceive(), Action: " + action);
+
+            if (action == null)
+                return;
+
+            if (action.equalsIgnoreCase(ACTION_ALARM_SET))
+            {
+                Log.w(TAG, " timerCounts: " + timerCounts + ", " + sdf.format(thisDate));
+                timerCounts++;
+                message = "Times Up!! " + timerCounts + ", " + sdf.format(thisDate);
+                cancelAlarm(1);
+                startAlarm();
+                tvMessage.setText(timerCounts + ", " + sdf.format(thisDate));
+            }
+            else if (action.equalsIgnoreCase(ACTION_ALARM_CANCEL))
+            {
+                message = "Cancel Alarm ~~";
+                cancelAlarm(1);
+                clearAbortBroadcast();
+                timerCounts = 0;
+            }
+            else
+            {
+                message = "Error !! action unknow.";
+            }
+
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+        }
+    }
 
 
     @Override
@@ -50,8 +91,8 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        initView();;
-        initControl();
+        initView();
+        //initControl();
     }
 
     @Override
@@ -96,6 +137,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    @SuppressLint("SetTextI18n")
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void OnClickedOnOff(View view)
     {
@@ -112,11 +154,7 @@ public class MainActivity extends AppCompatActivity
             btnSwitch.setText("Start Alarm");
             swStatus = false;
             //Intent intent = new Intent(ACTION_ALARM_CANCLE);
-            sendBroadcast(new Intent(ACTION_ALARM_CANCLE));
-            //sendOrderedBroadcast(new Intent(ACTION_ALARM_CANCLE), "10");
-            //cancelAlarm(1);
-            //alarmReceiver.abortBroadcast();
-            //alarmReceiver.clearAbortBroadcast();
+            sendBroadcast(new Intent(ACTION_ALARM_CANCEL));
         }
     }
 
@@ -132,56 +170,43 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void initControl()
-    {
-        //setAlarm(10);
-        //initAlarm();
-    }
+    {}
 
-    Calendar calendar;
-    private void initAlarm()
-    {
-        Intent  alarmIntent = new Intent(ACTION_ALARM_SET);
-        //pi = PendingIntent.getBroadcast(this, 0, alarmIntent, PendingIntent.FLAG_ONE_SHOT);
-        pi = PendingIntent.getBroadcast(MainActivity.this, 0, alarmIntent, PendingIntent.FLAG_ONE_SHOT);
-
-        calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        //calendar.set(Calendar.HOUR_OF_DAY, 15);
-        //calendar.set(Calendar.MINUTE, 18);
-    }
+    //private void initAlarm()
+    //{
+    //    Intent  alarmIntent = new Intent(ACTION_ALARM_SET);
+    //    pi = PendingIntent.getBroadcast(MainActivity.this, 0, alarmIntent,
+    //                                        PendingIntent.FLAG_ONE_SHOT);
+    //}
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void startAlarm()
     {
-        String msg = "";
+        String msg;
         if (am == null)
         {
             int interval = 1000 * 10;
             Intent  alarmIntent = new Intent(ACTION_ALARM_SET);
-            //pi = PendingIntent.getBroadcast(this, 0, alarmIntent, PendingIntent.FLAG_ONE_SHOT);
             pi = PendingIntent.getBroadcast(MainActivity.this, 0,
                                                 alarmIntent, PendingIntent.FLAG_ONE_SHOT);
             am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            if (Build.VERSION.SDK_INT < 23) {
-                am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + interval, pi);
-                //am.setRepeating(AlarmManager.RTC_WAKEUP,
-                //        calendar.getTimeInMillis() + interval, interval, pi);
+            if (Build.VERSION.SDK_INT < 23)
+            {
+                //am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + interval, pi);
+                am.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()+interval, pi);
             }
             else
             {
-                am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,
+                //am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,
+                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,
                         System.currentTimeMillis() + interval, pi);
-                //am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, interval, pi);
             }
 
             msg = "Alarm set";
-
-            //Toast.makeText(this, "Alarm set", Toast.LENGTH_SHORT).show();
         }
         else
         {
             msg = "Error!! Alarm NOT null";
-            //Toast.makeText(this, "Error!! Alarm NOT null", Toast.LENGTH_SHORT).show();
         }
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
 
@@ -192,11 +217,6 @@ public class MainActivity extends AppCompatActivity
         AlarmService alarmService = new AlarmService();
 
     }
-
-    //public void cancleAlarm()
-    //{
-    //
-    //}
 
     //private void setAlarm(int n)
     //{
@@ -218,86 +238,29 @@ public class MainActivity extends AppCompatActivity
 
     private void cancelAlarm(int n)
     {
-        //for (int i = 0; i < n; i++)
-        //{
-        //    Intent intent = new Intent(ACTION_ALARM_CANCLE);
-        //    am = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-        //    pi = PendingIntent.getBroadcast(this, i, intent, PendingIntent.FLAG_ONE_SHOT);
-
-        if (am != null) {
+        if (am != null)
+        {
             am.cancel(pi);
 
             pi = null;
             am = null;
         }
-            tvMessage.setText("");
-        //}
+
+        tvMessage.setText("");
     }
 
     private IntentFilter getIntentFilter()
     {
         final IntentFilter filter = new IntentFilter();
-
         Log.w(TAG, "getIntentFilter(), add action to filter !! ");
-        filter.addAction(ACTION_ALARM_SET);
-        filter.addAction(ACTION_ALARM_CANCLE);
 
+        filter.addAction(ACTION_ALARM_SET);
+        filter.addAction(ACTION_ALARM_CANCEL);
         return filter;
     }
 
     int timerCounts=0;
     SimpleDateFormat    sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
-    //------------------ inner class -------------------//
-    private class AlarmReceiver extends BroadcastReceiver
-    {
-        @RequiresApi(api = Build.VERSION_CODES.M)
-        @Override
-        public void onReceive(Context context, Intent intent)
-        {
-            //Log.w(TAG, "onReceive(), timerCounts: " + timerCounts);
-            String action = intent.getAction();
-            String message = "";
-            Date thisDate = new Date(System.currentTimeMillis());
-            Log.w(TAG, "onReceive(), Action: " + action);
-
-            if (action.equalsIgnoreCase(ACTION_ALARM_SET))
-            {
-                Log.w(TAG, " timerCounts: " + timerCounts + ", " + sdf.format(thisDate));
-                timerCounts++;
-                //Toast.makeText(context, "Times Up!!", Toast.LENGTH_LONG).show();
-                message = "Times Up!! " + timerCounts + ", " + sdf.format(thisDate);
-                //Intent intent1 = new Intent(context, AlarmService.class);
-                //context.startService(intent1);
-                //if (swStatus)
-                //{
-                    cancelAlarm(1);
-
-                    //initAlarm();
-                    startAlarm();
-                //}
-                tvMessage.setText(timerCounts + ", " + sdf.format(thisDate));
-            }
-            else if (action.equalsIgnoreCase(ACTION_ALARM_CANCLE))
-            {
-                //Toast.makeText(context, "Cancel Alarm ~~", Toast.LENGTH_LONG).show();
-                //abortBroadcast();
-                message = "Cancel Alarm ~~";
-                cancelAlarm(1);
-                //abortBroadcast();
-                clearAbortBroadcast();
-                timerCounts = 0;
-                //alarmReceiver.clearAbortBroadcast();
-                //alarmReceiver = null;
-                //tvMessage.setText("");
-            }
-            else
-            {
-                //Toast.makeText(context, "Error !! action unknow.", Toast.LENGTH_LONG).show();
-                message = "Error !! action unknow.";
-            }
-
-            Toast.makeText(context, message, Toast.LENGTH_LONG).show();
-        }
-    }
 }
+

@@ -42,7 +42,7 @@ public class AlarmService extends Service
         int offset = 1000 * 10;
         long triggerAtTime = SystemClock.elapsedRealtime() + offset;
         Intent intent1 = new Intent(MainActivity.ACTION_ALARM_SET);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent1, 0);
 
         if (Build.VERSION.SDK_INT > 22)
             am.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAtTime, pendingIntent);
