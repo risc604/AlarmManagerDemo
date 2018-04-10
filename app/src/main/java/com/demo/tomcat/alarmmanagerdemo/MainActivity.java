@@ -34,10 +34,14 @@ public class MainActivity extends AppCompatActivity
     public static final String ACTION_ALARM_SET = "com.demo.tomcat.alarmmanagerdemo.ACTION_ALARM_SET";
     public static final String ACTION_ALARM_CANCEL = "com.demo.tomcat.alarmmanagerdemo.ACTION_ALARM_CANCEL";
 
+    private static boolean swStatus = false;
+    int timerCounts=0;
+    @SuppressLint("SimpleDateFormat")
+    SimpleDateFormat    sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+
     TextView    tvMessage;
     Button      btnSwitch;
 
-    private static boolean swStatus = false;
     AlarmManager    am;
     PendingIntent   pi;
     AlarmReceiver   alarmReceiver;
@@ -122,7 +126,6 @@ public class MainActivity extends AppCompatActivity
         Log.w(TAG, "onStop(), ");
         super.onStop();
 
-
     }
 
     @Override
@@ -159,7 +162,6 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-
     //------------------ User function ------------------//
     private void initView()
     {
@@ -171,13 +173,6 @@ public class MainActivity extends AppCompatActivity
 
     private void initControl()
     {}
-
-    //private void initAlarm()
-    //{
-    //    Intent  alarmIntent = new Intent(ACTION_ALARM_SET);
-    //    pi = PendingIntent.getBroadcast(MainActivity.this, 0, alarmIntent,
-    //                                        PendingIntent.FLAG_ONE_SHOT);
-    //}
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void startAlarm()
@@ -212,30 +207,6 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    public void startAlarmService()
-    {
-        AlarmService alarmService = new AlarmService();
-
-    }
-
-    //private void setAlarm(int n)
-    //{
-    //    long actionTime = 70;
-    //
-    //    for (int i=0; i<n; i++)
-    //    {
-    //        cal = Calendar.getInstance();
-    //        //cal.set(2018, 4-1, 6, 1, 20, 0);
-    //        cal.setTimeInMillis(System.currentTimeMillis() + actionTime);
-    //
-    //        Intent intent = new Intent(ACTION_ALARM_SET);
-    //        am = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-    //        pi = PendingIntent.getBroadcast(this, i, intent, PendingIntent.FLAG_ONE_SHOT);
-    //        am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
-    //    }
-    //
-    //}
-
     private void cancelAlarm(int n)
     {
         if (am != null)
@@ -259,8 +230,37 @@ public class MainActivity extends AppCompatActivity
         return filter;
     }
 
-    int timerCounts=0;
-    SimpleDateFormat    sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+    public void startAlarmService()
+    {
+        AlarmService alarmService = new AlarmService();
+
+    }
+
+    //private void initAlarm()
+    //{
+    //    Intent  alarmIntent = new Intent(ACTION_ALARM_SET);
+    //    pi = PendingIntent.getBroadcast(MainActivity.this, 0, alarmIntent,
+    //                                        PendingIntent.FLAG_ONE_SHOT);
+    //}
+
+    //private void setAlarm(int n)
+    //{
+    //    long actionTime = 70;
+    //
+    //    for (int i=0; i<n; i++)
+    //    {
+    //        cal = Calendar.getInstance();
+    //        //cal.set(2018, 4-1, 6, 1, 20, 0);
+    //        cal.setTimeInMillis(System.currentTimeMillis() + actionTime);
+    //
+    //        Intent intent = new Intent(ACTION_ALARM_SET);
+    //        am = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+    //        pi = PendingIntent.getBroadcast(this, i, intent, PendingIntent.FLAG_ONE_SHOT);
+    //        am.set(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), pi);
+    //    }
+    //
+    //}
+
 
 }
 
