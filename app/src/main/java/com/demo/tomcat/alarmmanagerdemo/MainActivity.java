@@ -135,9 +135,11 @@ public class MainActivity extends AppCompatActivity
         super.onDestroy();
         if (alarmReceiver != null)
         {
+            alarmReceiver.clearAbortBroadcast();
             unregisterReceiver(alarmReceiver);
             Log.e(TAG, " unregisterReceiver alarmReceiver !! ");
         }
+        cancelAlarm(1);
     }
 
     @SuppressLint("SetTextI18n")
@@ -180,7 +182,7 @@ public class MainActivity extends AppCompatActivity
         String msg;
         if (am == null)
         {
-            int interval = 1000 * 10;
+            int interval = 1000 * 30;
             Intent  alarmIntent = new Intent(ACTION_ALARM_SET);
             pi = PendingIntent.getBroadcast(MainActivity.this, 0,
                                                 alarmIntent, PendingIntent.FLAG_ONE_SHOT);
