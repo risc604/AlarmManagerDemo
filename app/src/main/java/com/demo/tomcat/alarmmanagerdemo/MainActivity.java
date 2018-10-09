@@ -238,18 +238,21 @@ public class MainActivity extends AppCompatActivity
             pi = PendingIntent.getBroadcast(MainActivity.this, 0,
                                                 alarmIntent, PendingIntent.FLAG_ONE_SHOT);
             am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-            if (Build.VERSION.SDK_INT < 23)
-            {
-                //am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + interval, pi);
-                am.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()+interval, pi);
-            }
-            else
-            {
-                //am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,
-                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,
-                        System.currentTimeMillis() + interval, pi);
-            }
-
+            // if (Build.VERSION.SDK_INT < 23)
+            // {
+            //     //am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + interval, pi);
+            //     am.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()+interval, pi);
+            // }
+            // else
+            // {
+            //     //am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,
+            //     am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,
+            //             System.currentTimeMillis() + interval, pi);
+            // }
+            //
+            long triggerTime = System.currentTimeMillis() + interval;
+            AlarmManager.AlarmClockInfo alarmClockInfo = new AlarmManager.AlarmClockInfo(triggerTime, pi);
+            am.setAlarmClock(alarmClockInfo, pi);
             msg = "Alarm set";
         }
         else
@@ -363,9 +366,9 @@ public class MainActivity extends AppCompatActivity
             notificationChannel.setShowBadge(true);
             notificationChannel.setDescription(noteMSG);
             notificationChannel.setVibrationPattern(new long[]{0, 5000, 60*1000, 5000});
-            //notificationChannel.setSound(Uri.parse("android.resource://" + getPackageName() +
-            //        "/raw/kwahmah_02_alarm1"), audioAttributes);
-            notificationChannel.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION), audioAttributes);
+            notificationChannel.setSound(Uri.parse("android.resource://" + getPackageName() +
+                    "/raw/kwahmah_02_alarm1"), audioAttributes);
+            //notificationChannel.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION), audioAttributes);
             notificationChannel.setLightColor(getColor(R.color.colorPrimary));
             notificationChannel.enableVibration(true);
             //notificationChannel.canShowBadge();
