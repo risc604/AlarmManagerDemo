@@ -31,23 +31,27 @@ public class AlarmService extends Service
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Log.w(TAG, "Thread run(): " + sdf.format(new Date(System.currentTimeMillis())));
-            }
-        }).start();
 
-        AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
-        int offset = 1000 * 10;
-        long triggerAtTime = SystemClock.elapsedRealtime() + offset;
-        Intent intent1 = new Intent(MainActivity.ACTION_ALARM_SET);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent1, 0);
+        Log.w(TAG, "onStartCommand(), action:" + intent.getAction());
+        
+        //new Thread(new Runnable() {
+        //    @Override
+        //    public void run() {
+        //        Log.w(TAG, "Thread run(): " + sdf.format(new Date(System.currentTimeMillis())));
+        //    }
+        //}).start();
+        //
+        //AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
+        //int offset = 1000 * 10;
+        //long triggerAtTime = SystemClock.elapsedRealtime() + offset;
+        //Intent intent1 = new Intent(MainActivity.ACTION_ALARM_SET);
+        //PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent1, 0);
+        //
+        //if (Build.VERSION.SDK_INT > 22)
+        //    am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtTime, pendingIntent);
+        //else
+        //    am.setExact(AlarmManager.RTC_WAKEUP, triggerAtTime, pendingIntent);
 
-        if (Build.VERSION.SDK_INT > 22)
-            am.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAtTime, pendingIntent);
-        else
-            am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAtTime, pendingIntent);
 
         return super.onStartCommand(intent, flags, startId);
     }

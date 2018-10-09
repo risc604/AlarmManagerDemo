@@ -44,6 +44,7 @@ public class MainActivity extends AppCompatActivity
 
     AlarmManager    am;
     PendingIntent   pi;
+    AlarmService alarmService;
     AlarmReceiver   alarmReceiver;
 
     //------------------ inner class -------------------//
@@ -87,6 +88,44 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    //private final BroadcastReceiver alarmReceiver = new BroadcastReceiver() {
+    //    @SuppressLint("SetTextI18n")
+    //    @Override
+    //    public void onReceive(Context context, Intent intent)
+    //    {
+    //        String action = intent.getAction();
+    //        String message = "";
+    //        Date thisDate = new Date(System.currentTimeMillis());
+    //        Log.w(TAG, "onReceive(), Action: " + action);
+    //
+    //        if (action == null)
+    //            return;
+    //
+    //        if (action.equalsIgnoreCase(ACTION_ALARM_SET))
+    //        {
+    //            Log.w(TAG, " timerCounts: " + timerCounts + ", " + sdf.format(thisDate));
+    //            timerCounts++;
+    //            message = "Times Up!! " + timerCounts + ", " + sdf.format(thisDate);
+    //            cancelAlarm(1);
+    //            startAlarm();
+    //            tvMessage.setText(timerCounts + ", " + sdf.format(thisDate));
+    //        }
+    //        else if (action.equalsIgnoreCase(ACTION_ALARM_CANCEL))
+    //        {
+    //            message = "Cancel Alarm ~~";
+    //            cancelAlarm(1);
+    //            clearAbortBroadcast();
+    //            timerCounts = 0;
+    //        }
+    //        else
+    //        {
+    //            message = "Error !! action unknow.";
+    //        }
+    //
+    //        Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+    //    }
+    //};
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -96,6 +135,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         initView();
+        //alarmService = new AlarmService();
         //initControl();
     }
 
@@ -104,12 +144,14 @@ public class MainActivity extends AppCompatActivity
     {
         Log.w(TAG, "onStart(), ");
         super.onStart();
+        alarmService = new AlarmService();
         if (alarmReceiver == null)
         {
-            alarmReceiver = new AlarmReceiver();
+            //alarmReceiver = new AlarmReceiver();
             registerReceiver(alarmReceiver, getIntentFilter());
             Log.w(TAG, " registerReceiver, alarmReceiver: " + alarmReceiver);
         }
+        //alarmService = new AlarmService();
     }
 
     @Override
@@ -140,6 +182,8 @@ public class MainActivity extends AppCompatActivity
             Log.e(TAG, " unregisterReceiver alarmReceiver !! ");
         }
         cancelAlarm(1);
+        alarmService.onDestroy();
+        alarmService = null;
     }
 
     @SuppressLint("SetTextI18n")
@@ -176,7 +220,6 @@ public class MainActivity extends AppCompatActivity
     private void initControl()
     {}
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     public void startAlarm()
     {
         String msg;
